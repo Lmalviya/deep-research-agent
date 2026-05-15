@@ -1,0 +1,38 @@
+# 🔐 Secrets & Environment
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# 🐍 Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.python-version
+.pytest_cache/
+.mypy_cache/
+
+# 🐳 Docker
+.docker/
+# Ignore local data if you ever use relative paths instead of named volumes
+**/data/
+
+# 🖥️ Operating System
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+
+# 💻 IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# 📦 Dependency managers
+node_modules/
+.npm/

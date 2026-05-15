@@ -1,17 +1,16 @@
 # 🏛️ Infrastructure: LiteLLM Proxy & Monitoring
 
-This directory contains the core infrastructure for the Deep Research Platform. It is designed with a **Bridge Architecture** to ensure high security and centralized monitoring.
+This directory contains the production-grade infrastructure for the Deep Research Platform. It features a **Bridge Architecture** that isolates sensitive database traffic while providing global observability.
 
 ## 🏗️ Architecture Overview
 
-*   **LiteLLM Proxy**: Acts as the central gateway for all AI model requests.
-*   **PostgreSQL**: A dedicated, isolated database for LiteLLM to store keys and logs.
-*   **Prometheus**: A global monitoring service that scrapes performance metrics.
+*   **LiteLLM Proxy**: The central gateway for all AI requests.
+*   **PostgreSQL**: An isolated database (`litellm-db`) for persistence.
+*   **Prometheus**: Global monitoring that scrapes performance metrics.
 
 ### 🛡️ Network Security
-We use two separate networks:
-1.  `infra-network` (External): A global bridge for monitoring and cross-service communication.
-2.  `litellm-db-internal` (Internal): A private network that isolates the database from the rest of the system.
+1.  **`infra-network` (Global)**: The bridge connecting Prometheus to LiteLLM.
+2.  **`litellm-db-internal` (Private)**: An isolated network for LiteLLM-to-DB traffic only.
 
 ---
 
@@ -32,40 +31,36 @@ infra/
 
 ## 🚀 Setup Instructions
 
-### 1. Prerequisites
-Ensure **Docker Desktop** is running on your machine.
-
-### 2. Initialize the Global Network
-Run this command once to create the shared communication bridge:
+### 1. Initialize Networking
+Run this once to create the global communication bridge:
 ```powershell
 docker network create infra-network
 ```
 
-### 3. Start Global Monitoring
-Start the Prometheus stack first:
+### 2. Configure Secrets
+Edit `infra/litellm/.env` and add your real API keys for the providers you want to use.
+
+### 3. Start the Stack
 ```powershell
+# Start Monitoring
 cd infra
 docker compose up -d
-```
 
-### 4. Start LiteLLM Proxy
-Navigate to the litellm directory and start the proxy and its database:
-```powershell
-cd infra/litellm
+# Start LiteLLM Proxy
+cd litellm
 docker compose up -d
 ```
 
 ---
 
-## 🧪 Testing the Setup
+## 🧪 Testing
 
-### Test 1: API Connectivity
-Check if the proxy is alive and can handle authentication (replaces the key with the one in your `.env`):
+### Test API (using NVIDIA example)
 ```powershell
 curl -X POST 'http://localhost:4000/chat/completions' `
   -H 'Content-Type: application/json' `
   -H 'Authorization: Bearer sk-admin-7f2a1b9c3d4e5f6a8b' `
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello!"}]}'
+  -d '{"model": "nemotron", "messages": [{"role": "user", "content": "Hello!"}]}'
 ```
 
 ### Test 2: Monitoring Link
