@@ -53,6 +53,21 @@ docker compose up -d
 
 ---
 
+## 🖥️ Admin UI Dashboard
+
+LiteLLM includes a built-in dashboard for managing keys and tracking usage.
+
+*   **URL**: [http://localhost:4000/ui](http://localhost:4000/ui)
+*   **Authentication**: Use the `LITELLM_MASTER_KEY` from your `.env` file to log in.
+
+### Key Features:
+*   **Virtual Keys**: Create specific keys with budgets and expiration dates.
+*   **Spend Tracking**: Real-time monitoring of costs across all providers.
+*   **Playground**: Test models directly in the browser.
+*   **Audit Logs**: View every request and response passing through the proxy.
+
+---
+
 ## 🧪 Testing
 
 ### Test API (using NVIDIA example)
