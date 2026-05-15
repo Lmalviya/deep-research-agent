@@ -1,0 +1,38 @@
+services:
+  litellm_db:
+    image: postgres:16-alpine
+    container_name: litellm-db
+    environment:
+      POSTGRES_DB: ${LITELLM_DB_NAME}
+      POSTGRES_USER: ${LITELLM_DB_USERNAME}
+      POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD}
+    volumes:
+      - litellm_db_data:/var/lib/postgresql/data
+    networks:
+      - litellm-db-internal # 🔒 Isolated in the internal room
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm-proxy
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    env_file:
+      - .env
+    command: ["--config", "/app/config.yaml", "--host", "0.0.0.0", "--port", "4000", "--detailed_debug"]
+    depends_on:
+      - litellm_db
+    networks:
+      - litellm-db-internal # ⬅️ To talk to the DB
+      - infra-network        # ⬅️ To talk to Prometheus
+
+volumes:
+  litellm_db_data:
+
+networks:
+  litellm-db-internal:    # 🛡️ New internal network
+    driver: bridge
+  infra-network:
+    external: true
+    name: infra-network
