@@ -1,21 +1,34 @@
 model_list:
-  # 1. OpenAI Example
+  # ⚖️ LOAD BALANCING EXAMPLE
+  # Multiple entries with the SAME model_name will automatically be load-balanced
   - model_name: gpt-4o
     litellm_params:
       model: gpt-4o
-      api_key: "os.environ/OPENAI_API_KEY"
+      api_key: "os.environ/OPENAI_API_KEY_1"
+  - model_name: gpt-4o
+    litellm_params:
+      model: gpt-4o
+      api_key: "os.environ/OPENAI_API_KEY_2"
 
-  # 2. Anthropic Example
-  - model_name: claude-3-5-sonnet
+  # 🔄 FALLBACK EXAMPLE
+  # If Claude fails, LiteLLM will automatically try the 'gpt-4o' group
+  - model_name: smart-model
     litellm_params:
       model: anthropic/claude-3-5-sonnet-20240620
       api_key: "os.environ/ANTHROPIC_API_KEY"
+      fallbacks: ["gpt-4o"] 
 
-  # 3. NVIDIA NIM Example
+  # 🤖 NVIDIA NIM EXAMPLE
   - model_name: nemotron
     litellm_params:
       model: nvidia_nim/meta/llama-3.1-8b-instruct
       api_key: "os.environ/NVIDIA_NIM_API_KEY"
+
+  # 🔢 EMBEDDING MODEL EXAMPLE
+  - model_name: text-embedding
+    litellm_params:
+      model: text-embedding-3-small
+      api_key: "os.environ/OPENAI_API_KEY_1"
 
 general_settings:
   master_key: "os.environ/LITELLM_MASTER_KEY"
@@ -23,3 +36,10 @@ general_settings:
   
 router_settings:
   routing_strategy: latency-based-routing
+  num_retries: 3
+  allowed_fails: 5        # Take model out of rotation after 5 fails
+  cooldown_time: 300      # Keep it out for 5 minutes
+  timeout: 60             # Wait max 60s for a response
+  routing_strategy_args:
+    ttl: 300
+    lowest_latency_buffer: 0.05

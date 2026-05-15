@@ -29,6 +29,17 @@ infra/
 
 ---
 
+## 🤖 Supported Models (Ready to use)
+
+| Provider | Proxy Model Name | Internal Engine | Type |
+| :--- | :--- | :--- | :--- |
+| **OpenAI** | `gpt-4o` | `gpt-4o` (Load Balanced) | Chat |
+| **Anthropic** | `smart-model` | `claude-3-5-sonnet` (Fallback to gpt-4o) | Chat |
+| **NVIDIA** | `nemotron` | `nvidia_nim/meta/llama-3.1-8b-instruct` | Chat |
+| **OpenAI** | `text-embedding` | `text-embedding-3-small` | **Embedding** |
+
+---
+
 ## 🚀 Setup Instructions
 
 ### 1. Initialize Networking
@@ -70,7 +81,7 @@ LiteLLM includes a built-in dashboard for managing keys and tracking usage.
 
 ## 🧪 Testing
 
-### Test API (using NVIDIA example)
+### Test 1: Chat Completions (Chat)
 ```powershell
 curl -X POST 'http://localhost:4000/chat/completions' `
   -H 'Content-Type: application/json' `
@@ -78,7 +89,15 @@ curl -X POST 'http://localhost:4000/chat/completions' `
   -d '{"model": "nemotron", "messages": [{"role": "user", "content": "Hello!"}]}'
 ```
 
-### Test 2: Monitoring Link
+### Test 2: Text Embeddings (Vector)
+```powershell
+curl -X POST 'http://localhost:4000/embeddings' `
+  -H 'Content-Type: application/json' `
+  -H 'Authorization: Bearer sk-admin-7f2a1b9c3d4e5f6a8b' `
+  -d '{"model": "text-embedding", "input": "The quick brown fox jumps over the lazy dog"}'
+```
+
+### Test 3: Monitoring Link
 1.  **Metrics Check**: Run `curl http://localhost:4000/metrics`. You should see a list of performance stats.
 2.  **Dashboard Check**: Open [http://localhost:9090/targets](http://localhost:9090/targets). The `litellm` target should be **UP** (Green).
 
