@@ -1,12 +1,12 @@
 # 🔐 Secrets & Environment
-.env
-.env.*
+**/.env
+**/.env.*
 !.env.example
 *.key
 *.pem
 
 # 🐍 Python
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 .venv/
@@ -18,7 +18,6 @@ venv/
 
 # 🐳 Docker
 .docker/
-# Ignore local data if you ever use relative paths instead of named volumes
 **/data/
 
 # 🖥️ Operating System
