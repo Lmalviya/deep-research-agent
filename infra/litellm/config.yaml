@@ -1,8 +1,21 @@
 model_list:
+  # 1. OpenAI Example
   - model_name: gpt-4o
     litellm_params:
-      model: openai/gpt-4o
+      model: gpt-4o
       api_key: "os.environ/OPENAI_API_KEY"
+
+  # 2. Anthropic Example
+  - model_name: claude-3-5-sonnet
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20240620
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+
+  # 3. NVIDIA NIM Example
+  - model_name: nemotron
+    litellm_params:
+      model: nvidia_nim/meta/llama-3.1-8b-instruct
+      api_key: "os.environ/NVIDIA_NIM_API_KEY"
 
 general_settings:
   master_key: "os.environ/LITELLM_MASTER_KEY"
