@@ -1,0 +1,15 @@
+[project]
+name = "brain"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.136.1",
+    "httpx>=0.28.1",
+    "langchain-mcp-adapters>=0.2.2",
+    "langchain-openai>=1.2.1",
+    "pydantic-settings>=2.14.1",
+    "python-dotenv>=1.2.2",
+    "sse-starlette>=3.4.4",
+    "uvicorn[standard]>=0.47.0",
+]
