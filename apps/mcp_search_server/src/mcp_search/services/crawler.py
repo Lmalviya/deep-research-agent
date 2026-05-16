@@ -12,31 +12,16 @@ from mcp_search.config import settings
 from mcp_search.services.fetcher import fetch_html
 from mcp_search.services.extractor import extract_content
 from mcp_search.models.extract import ExtractResponse
+from mcp_search.services.batch_extractor import batch_extract
 
+from mcp_search.services.batch_crawler import batch_crawl
 
-def _is_valid_url(url: str, base_domain: str) -> bool:
-    try:
-        parsed = urlparse(url)
-        return bool(parsed.scheme in ("http", "https") and parsed.netloc)
-    except Exception:
-        return False
-
-
-def _extract_links(html: str, base_url: str) -> list[str]:
-    soup = BeautifulSoup(html, "html.parser")
-
-    links = []
-    for a_tag in soup.find_all("a", href=True):
-        href = a_tag["href"]
-        full_url = urljoin(base_url, href)
-        links.append(full_url)
-
-    return links
 
 
 async def crawl(
     start_url: str,
     max_pages: int | None = None,
+    batch_size: int | None = None,
 ) -> list[ExtractResponse]:
     """
     Simple BFS crawler:
@@ -46,33 +31,10 @@ async def crawl(
     """
 
     max_pages = max_pages or settings.max_crawl_pages
+    batch_size = batch_size or settings.crawl_batch_size
 
-    visited: set[str] = set()
-    queue: deque[str] = deque([start_url])
-
-    results: list[ExtractResponse] = []
-
-    while queue and len(results) < max_pages:
-        url = queue.popleft()
-
-        if url in visited:
-            continue
-
-        visited.add(url)
-
-        try:
-            html = await fetch_html(url)
-            extracted = extract_content(url, html)
-            results.append(extracted)
-
-            # Extract new links for crawling
-            links = _extract_links(html, url)
-
-            for link in links:
-                if link not in visited:
-                    queue.append(link)
-
-        except Exception:
-            continue
-
-    return results
+    return await batch_crawl(
+        start_url=start_url,
+        max_pages=max_pages,
+        batch_size=batch_size,
+    )
