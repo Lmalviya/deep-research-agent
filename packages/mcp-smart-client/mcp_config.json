@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "retrieval-hub": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--project",
+        "packages/mcp-server-hub",
+        "packages/mcp-server-hub/main.py"
+      ],
+      "env": {
+        "TAVILY_API_KEY": "your-key-here"
+      }
+    }
+  }
+}

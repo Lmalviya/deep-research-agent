@@ -15,14 +15,16 @@ services:
   mcp-postgres:
     image: postgres:16-alpine
     container_name: mcp-postgres
+    env_file:
+      - ../apps/backend/.env
     environment:
       POSTGRES_DB: mcp_host
       POSTGRES_USER: mcp_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mcp_secret}
+      POSTGRES_PASSWORD: backend_password
     volumes:
       - mcp_postgres_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"   # Port 5433 on host to avoid conflict with LiteLLM's Postgres on 5432
+      - "5433:5432"
     networks:
       - infra-network
     healthcheck:
@@ -41,9 +43,10 @@ services:
       - "8001:8001"
     networks:
       - infra-network
+    env_file:
+      - ../brain/.env
     environment:
       - LITELLM_BASE_URL=http://litellm-proxy:4000
-      - LITELLM_API_KEY=${LITELLM_API_KEY:-}
     restart: unless-stopped
 
   # ── Backend (API Gateway + MCP Manager) ────────────────────────────────────
@@ -57,9 +60,13 @@ services:
     networks:
       - infra-network
     environment:
-      - DATABASE_URL=postgresql+asyncpg://mcp_user:${POSTGRES_PASSWORD:-mcp_secret}@mcp-postgres:5432/mcp_host
+      - BACKEND_DB_ENDPOINT=mcp-postgres
+      - BACKEND_DB_USER=mcp_user
+      - BACKEND_DB_PASSWORD=backend_password
+      - BACKEND_DB_PORT=5432
+      - BACKEND_DB_NAME=mcp_host
+      - SECRET_KEY=Q1d6V2N4V0ZyQ0h4N2l4M1Q3a3F6bWQ2R0p0eW9pU1hJc1JvS0E9
       - BRAIN_URL=http://brain:8001
-      - SECRET_KEY=${SECRET_KEY:-CHANGE_ME_generate_a_real_fernet_key}
       - CORS_ORIGINS=http://localhost:3000
     depends_on:
       mcp-postgres:

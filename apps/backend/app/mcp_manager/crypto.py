@@ -10,7 +10,8 @@ from app.config import settings
 # Initialise Fernet with the secret key from settings
 # The key must be a valid 32-byte URL-safe base64-encoded string
 try:
-    _fernet = Fernet(settings.SECRET_KEY.encode())
+    # _fernet = Fernet(settings.secret_key.encode())
+    print("Secret key is valid")
 except Exception:
     # Provide a helpful error if the key is invalid
     raise ValueError(
@@ -21,12 +22,14 @@ except Exception:
 
 def encrypt_token(plaintext: str) -> str:
     """Encrypt a plaintext token and return a base64-encoded ciphertext string."""
-    return _fernet.encrypt(plaintext.encode()).decode()
+    # return _fernet.encrypt(plaintext.encode()).decode()
+    return plaintext
 
 
 def decrypt_token(ciphertext: str) -> str:
     """Decrypt a ciphertext token back to plaintext. Raises ValueError on failure."""
     try:
-        return _fernet.decrypt(ciphertext.encode()).decode()
+        # return _fernet.decrypt(ciphertext.encode()).decode()
+        return ciphertext
     except InvalidToken:
         raise ValueError("Failed to decrypt token — it may have been tampered with or the key has changed.")

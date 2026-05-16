@@ -68,7 +68,7 @@ async def chat(body: ChatRequest, db: AsyncSession = Depends(get_db)):
         async with httpx.AsyncClient(timeout=120.0) as client:
             async with client.stream(
                 "POST",
-                f"{settings.BRAIN_URL}/invoke",
+                f"{settings.brain_url}/invoke",
                 json=brain_payload,
                 headers={"Accept": "text/event-stream"},
             ) as response:
