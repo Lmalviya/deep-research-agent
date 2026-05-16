@@ -1,4 +1,6 @@
 services:
+
+  # ── Monitoring ──────────────────────────────────────────────────────────────
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -8,6 +10,82 @@ services:
       - "9090:9090"
     networks:
       - infra-network
+
+  # ── MCP Host Database (separate from LiteLLM's Postgres) ───────────────────
+  mcp-postgres:
+    image: postgres:16-alpine
+    container_name: mcp-postgres
+    environment:
+      POSTGRES_DB: mcp_host
+      POSTGRES_USER: mcp_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mcp_secret}
+    volumes:
+      - mcp_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # Port 5433 on host to avoid conflict with LiteLLM's Postgres on 5432
+    networks:
+      - infra-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcp_user -d mcp_host"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Brain (Orchestration Service) ──────────────────────────────────────────
+  brain:
+    build:
+      context: ../brain
+      dockerfile: Dockerfile
+    container_name: mcp-brain
+    ports:
+      - "8001:8001"
+    networks:
+      - infra-network
+    environment:
+      - LITELLM_BASE_URL=http://litellm-proxy:4000
+      - LITELLM_API_KEY=${LITELLM_API_KEY:-}
+    restart: unless-stopped
+
+  # ── Backend (API Gateway + MCP Manager) ────────────────────────────────────
+  backend:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile
+    container_name: mcp-backend
+    ports:
+      - "8000:8000"
+    networks:
+      - infra-network
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://mcp_user:${POSTGRES_PASSWORD:-mcp_secret}@mcp-postgres:5432/mcp_host
+      - BRAIN_URL=http://brain:8001
+      - SECRET_KEY=${SECRET_KEY:-CHANGE_ME_generate_a_real_fernet_key}
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      mcp-postgres:
+        condition: service_healthy
+      brain:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── UI (Next.js) ────────────────────────────────────────────────────────────
+  ui:
+    build:
+      context: ../apps/ui
+      dockerfile: Dockerfile
+    container_name: mcp-ui
+    ports:
+      - "3000:3000"
+    networks:
+      - infra-network
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mcp_postgres_data:
 
 networks:
   infra-network:
