@@ -1,4 +1,5 @@
 import trafilatura
+import asyncio
 
 from mcp_search.models.extract import ExtractResponse
 
@@ -7,6 +8,8 @@ def extract_content(url: str, html: str) -> ExtractResponse:
     """
     Extract clean markdown content from raw HTML.
     """
+    cache_key = _make_key("extract", url)
+
 
     extracted = trafilatura.extract(
         html,
@@ -26,7 +29,7 @@ def extract_content(url: str, html: str) -> ExtractResponse:
     if metadata:
         title = metadata.title
 
-    return ExtractResponse(
+    result = ExtractResponse(
         url=url,
         title=title,
         content=extracted,
@@ -36,3 +39,20 @@ def extract_content(url: str, html: str) -> ExtractResponse:
         # language=metadata.language,
         # quality_score=metadata.quality,
     )
+    
+
+    # Fire-and-forget cache write (simple version)
+    try:
+        async def _cache():
+            await redis_client.set(
+                cache_key,
+                result.model_dump_json(),
+                ex=3600,
+            )
+
+        asyncio.create_task(_cache())
+
+    except Exception:
+        pass
+
+    return result

@@ -7,6 +7,9 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    redis_host: str = Field(..., alias="REDIS_HOST")
+    redis_port: int = Field(..., alias="REDIS_PORT")
+
     searxng_base_url: str = Field(..., alias="SEARXNG_BASE_URL")
     request_timeout: int = Field(..., alias="REQUEST_TIMEOUT")
     max_search_results: int = Field(..., alias="MAX_SEARCH_RESULTS")

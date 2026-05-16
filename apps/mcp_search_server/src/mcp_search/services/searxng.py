@@ -1,8 +1,10 @@
+import json
 import httpx
 
 from mcp_search.config import settings
 from mcp_search.models.search import SearchResponse
 from mcp_search.models.search import SearchResult
+from mcp_search.services.cache import redis_client, _make_key
 
 
 async def search_searxng(
@@ -11,6 +13,14 @@ async def search_searxng(
 ) -> SearchResponse:
     limit = limit or settings.max_search_results
 
+    # 1. CHECK CACHE FIRST
+    cache_key = _make_key("search", query)
+    cached = await redis_client.get(cache_key)
+    if cached:
+        data = json.loads(cached)
+        return SearchResponse.model_validate(data)
+        
+    # 2. CALL SEARXNG
     async with httpx.AsyncClient(
         timeout=settings.request_timeout,
         headers={
@@ -46,7 +56,12 @@ async def search_searxng(
         except Exception:
             continue
 
-    return SearchResponse(
-        query=query,
-        results=results,
+    output = SearchResponse(query=query, results=results)
+
+    # 3. STORE CACHE (5 min TTL)
+    await redis_client.set(
+        cache_key,
+        output.model_dump_json(),
+        ex=300,
     )
+    return output
