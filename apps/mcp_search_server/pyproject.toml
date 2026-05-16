@@ -1,0 +1,30 @@
+[project]
+name = "mcp-search-server"
+version = "0.1.0"
+description = "Search-focused MCP server with search, extract, and crawl tools"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "mcp>=1.9.0",
+    "httpx>=0.28.1",
+    "trafilatura>=2.0.0",
+    "beautifulsoup4>=4.13.4",
+    "pydantic>=2.11.4",
+    "pydantic-settings>=2.9.1",
+]
+
+[project.scripts]
+mcp-search = "mcp_search.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_search"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.11.8",
+]
