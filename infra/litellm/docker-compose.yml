@@ -24,15 +24,16 @@ services:
     depends_on:
       - litellm_db
     networks:
-      - litellm-db-internal # ⬅️ To talk to the DB
-      - infra-network        # ⬅️ To talk to Prometheus
-
-volumes:
-  litellm_db_data:
+      - litellm-db-internal
+      - infra-network
 
 networks:
-  litellm-db-internal:    # 🛡️ New internal network
+  litellm-db-internal:
     driver: bridge
   infra-network:
     external: true
     name: infra-network
+
+volumes:
+  litellm_db_data:
+

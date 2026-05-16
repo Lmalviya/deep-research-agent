@@ -1,0 +1,18 @@
+services:
+  ui:
+    build:
+      context: ../../apps/ui
+      dockerfile: Dockerfile
+    container_name: mcp-ui
+    ports:
+      - "3000:3000"
+    networks:
+      - infra-network
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    restart: unless-stopped
+
+networks:
+  infra-network:
+    external: true
+    name: infra-network

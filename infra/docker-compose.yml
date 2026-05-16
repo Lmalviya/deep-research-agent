@@ -1,5 +1,4 @@
 services:
-
   # ── Monitoring ──────────────────────────────────────────────────────────────
   prometheus:
     image: prom/prometheus:latest
@@ -33,68 +32,34 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── Brain (Orchestration Service) ──────────────────────────────────────────
-  brain:
-    build:
-      context: ../brain
-      dockerfile: Dockerfile
-    container_name: mcp-brain
-    ports:
-      - "8001:8001"
-    networks:
-      - infra-network
-    env_file:
-      - ../brain/.env
-    environment:
-      - LITELLM_BASE_URL=http://litellm-proxy:4000
-    restart: unless-stopped
-
-  # ── Backend (API Gateway + MCP Manager) ────────────────────────────────────
-  backend:
-    build:
-      context: ../apps/backend
-      dockerfile: Dockerfile
-    container_name: mcp-backend
-    ports:
-      - "8000:8000"
-    networks:
-      - infra-network
-    environment:
-      - BACKEND_DB_ENDPOINT=mcp-postgres
-      - BACKEND_DB_USER=mcp_user
-      - BACKEND_DB_PASSWORD=backend_password
-      - BACKEND_DB_PORT=5432
-      - BACKEND_DB_NAME=mcp_host
-      - SECRET_KEY=Q1d6V2N4V0ZyQ0h4N2l4M1Q3a3F6bWQ2R0p0eW9pU1hJc1JvS0E9
-      - BRAIN_URL=http://brain:8001
-      - CORS_ORIGINS=http://localhost:3000
-    depends_on:
-      mcp-postgres:
-        condition: service_healthy
-      brain:
-        condition: service_started
-    restart: unless-stopped
-
-  # ── UI (Next.js) ────────────────────────────────────────────────────────────
-  ui:
-    build:
-      context: ../apps/ui
-      dockerfile: Dockerfile
-    container_name: mcp-ui
-    ports:
-      - "3000:3000"
-    networks:
-      - infra-network
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-    depends_on:
-      - backend
-    restart: unless-stopped
+  redis:
+      image: redis:7-alpine
+      container_name: redis
+      restart: unless-stopped
+      ports:
+        - "6379:6379"
+      command: >
+        redis-server
+        --appendonly yes
+        --save 60 1000
+        --loglevel warning
+      volumes:
+        - redis_data:/data
+      networks:
+        - infra-network
+      healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
 volumes:
+  redis_data:
   mcp_postgres_data:
 
 networks:
+  litellm-db-internal:    # 🛡️ New internal network
+    driver: bridge
   infra-network:
     external: true
     name: infra-network

@@ -1,0 +1,40 @@
+services:
+  backend:
+      build:
+        context: ../../apps/backend
+        dockerfile: Dockerfile
+      container_name: mcp-backend
+      ports:
+        - "8000:8000"
+      networks:
+        - infra-network
+      environment:
+        - BACKEND_DB_ENDPOINT=mcp-postgres
+        - BACKEND_DB_USER=mcp_user
+        - BACKEND_DB_PASSWORD=backend_password
+        - BACKEND_DB_PORT=5432
+        - BACKEND_DB_NAME=mcp_host
+        - SECRET_KEY=Q1d6V2N4V0ZyQ0h4N2l4M1Q3a3F6bWQ2R0p0eW9pU1hJc1JvS0E9
+        - BRAIN_URL=http://brain:8001
+        - CORS_ORIGINS=http://localhost:3000
+      depends_on:
+        brain:
+          condition: service_started
+      restart: unless-stopped
+
+  brain:
+    build:
+      context: ../../brain
+      dockerfile: Dockerfile
+    container_name: brain
+    ports:
+      - "8001:8001"
+    networks:
+      - infra-network
+    restart: unless-stopped
+
+networks:
+  infra-network:
+    external: true
+    name: infra-network
+
