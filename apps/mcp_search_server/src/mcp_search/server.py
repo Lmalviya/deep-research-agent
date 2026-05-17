@@ -1,5 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 
+from mcp_search.config import settings
 from mcp_search.tools.search import register_search_tool
 from mcp_search.tools.extract import register_extract_tool
 from mcp_search.tools.crawl import register_crawl_tool
@@ -19,8 +20,17 @@ def create_server() -> FastMCP:
 
 
 def main():
-    print("Starting MCP Search Server...")
-
     mcp = create_server()
 
-    mcp.run()
+    transport = settings.mcp_transport
+    print(f"Starting MCP Search Server [transport={transport}]...")
+
+    if transport == "sse":
+        print(f"  Listening on http://{settings.mcp_host}:{settings.mcp_port}")
+        mcp.run(
+            transport="sse",
+            host=settings.mcp_host,
+            port=settings.mcp_port,
+        )
+    else:
+        mcp.run(transport="stdio")

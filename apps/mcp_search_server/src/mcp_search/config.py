@@ -23,5 +23,10 @@ class Settings(BaseSettings):
         "Chrome/136.0.0.0 Safari/537.36"
     )
 
+    # Transport — stdio for local dev, sse for containerized/networked deployment
+    mcp_transport: str = Field(default="stdio", alias="MCP_TRANSPORT")
+    mcp_host: str = Field(default="0.0.0.0", alias="MCP_HOST")
+    mcp_port: int = Field(default=8000, alias="MCP_PORT")
+
 
 settings = Settings()

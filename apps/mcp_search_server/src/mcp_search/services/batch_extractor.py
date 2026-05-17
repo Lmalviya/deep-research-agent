@@ -2,13 +2,17 @@ import asyncio
 
 from mcp_search.services.fetcher import fetch_html
 from mcp_search.services.extractor import extract_content
+from mcp_search.services.cache import cache_extract_result
 from mcp_search.models.extract import ExtractResponse
 
 
 async def _process_url(url: str) -> ExtractResponse | None:
     try:
         html = await fetch_html(url)
-        return extract_content(url, html)
+        result = extract_content(url, html)
+        # Fire-and-forget cache write
+        asyncio.create_task(cache_extract_result(str(result.url), result.model_dump_json()))
+        return result
     except Exception:
         return None
 
